@@ -1,0 +1,35 @@
+# Build result folders
+bin/
+obj/
+
+# Visual Studio local workspace files
+.vs/
+
+# User-specific Visual Studio files
+*.user
+*.suo
+*.rsuser
+
+# Rider / JetBrains IDE files
+.idea/
+
+# Visual Studio Code local settings
+.vscode/
+
+# .NET test result folders
+TestResults/
+*.trx
+
+# NuGet generated package folders
+packages/
+
+# Logs
+*.log
+
+# Local environment files
+.env
+.env.*
+
+# OS generated files
+Thumbs.db
+Desktop.ini
