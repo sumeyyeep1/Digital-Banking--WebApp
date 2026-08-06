@@ -20,6 +20,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // 2. SERVİS KAYITLARI (Dependency Injection)
 // =============================================
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>(); // DI: Sifre hashleme servisini ihtiyac olan siniflara hazir olarak verir.
 // =============================================
 // 3. JWT AUTHENTICATION AYARLARI

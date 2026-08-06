@@ -13,6 +13,7 @@ namespace DigitalBanking.API.Services; // Bu sinifin Services alaninda oldugunu 
 
 // AuthService: Giris ve kayit gibi kimlik islemlerinin asil is mantigini tutar.
 // Benzetme: Controller musteriyle konusan veznedir; Service arkada isi yapan operasyon ekibidir.
+// AuthService, IAuthServiceden impelement edilir ; yani sozlesmedeki metotlari gerceklestirir.
 public class AuthService : IAuthService
 {
     private readonly AppDbContext _context; // Veritabaniyla konusmak icin kullandigimiz EF Core baglami.
@@ -22,11 +23,14 @@ public class AuthService : IAuthService
     public AuthService( // Dependency Injection bu constructor'a ihtiyac duyulan nesneleri verir.
         AppDbContext context, // EF Core veritabani baglami disaridan gelir.
         IConfiguration configuration, // Uygulama ayarlari disaridan gelir.
-        IPasswordHasher<User> passwordHasher) // Sifre hashleme servisi disaridan gelir.
+        IPasswordHasher<User> passwordHasher) // Sifre hashleme servisi disaridan gelir. 
     {
-        _context = context; // Gelen veritabani baglamini sinif icinde kullanmak icin saklariz.
+        //Burada classlardan parametre olarak gelen nesneler fieldlara atanýyor. Bu sayede class icinde bu nesnelere erisebiliriz.
+        {   
+            _context = context; // Gelen veritabani baglamini sinif icinde kullanmak icin saklariz.
         _configuration = configuration; // Gelen ayar okuyucuyu sinif icinde kullanmak icin saklariz.
         _passwordHasher = passwordHasher; // Gelen sifre hashleme servisini sinif icinde kullanmak icin saklariz.
+            //Consturctora gelen parametreler burada deðiþkenlere atanýyor.
     }
 
     // LoginAsync: Kullanici email ve sifre gonderdiginde giris yapabilir mi diye kontrol eder.
