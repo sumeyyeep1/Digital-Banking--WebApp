@@ -26,7 +26,6 @@ public class AuthService : IAuthService
         IPasswordHasher<User> passwordHasher) // Sifre hashleme servisi disaridan gelir. 
     {
         //Burada classlardan parametre olarak gelen nesneler fieldlara atanýyor. Bu sayede class icinde bu nesnelere erisebiliriz.
-        {   
             _context = context; // Gelen veritabani baglamini sinif icinde kullanmak icin saklariz.
         _configuration = configuration; // Gelen ayar okuyucuyu sinif icinde kullanmak icin saklariz.
         _passwordHasher = passwordHasher; // Gelen sifre hashleme servisini sinif icinde kullanmak icin saklariz.

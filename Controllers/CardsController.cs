@@ -1,5 +1,5 @@
-﻿using System.Security.Claims;
-using DigitalBanking.API.DTOs.Transactions;
+using System.Security.Claims;
+using DigitalBanking.API.DTOs.Cards;
 using DigitalBanking.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,17 +9,17 @@ namespace DigitalBanking.API.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
-public class TransactionsController : ControllerBase
+public class CardsController : ControllerBase
 {
-    private readonly ITransactionService _transactionService;
+    private readonly ICardService _cardService;
 
-    public TransactionsController(ITransactionService transactionService)
+    public CardsController(ICardService cardService)
     {
-        _transactionService = transactionService;
+        _cardService = cardService;
     }
 
-    [HttpPost("deposit")]
-    public async Task<IActionResult> Deposit([FromBody] DepositRequestDto request)
+    [HttpGet("my")]
+    public async Task<IActionResult> GetMyCards()
     {
         var userId = GetCurrentUserId();
 
@@ -28,12 +28,26 @@ public class TransactionsController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _transactionService.DepositAsync(userId.Value, request);
+        var cards = await _cardService.GetMyCardsAsync(userId.Value);
+        return Ok(cards);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateCard([FromBody] CreateCardRequestDto request)
+    {
+        var userId = GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await _cardService.CreateCardAsync(userId.Value, request);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 
-    [HttpPost("withdraw")]
-    public async Task<IActionResult> Withdraw([FromBody] WithdrawRequestDto request)
+    [HttpPut("{cardId:int}")]
+    public async Task<IActionResult> UpdateCard(int cardId, [FromBody] UpdateCardRequestDto request)
     {
         var userId = GetCurrentUserId();
 
@@ -42,21 +56,7 @@ public class TransactionsController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _transactionService.WithdrawAsync(userId.Value, request);
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
-    }
-
-    [HttpPost("transfer")]
-    public async Task<IActionResult> Transfer([FromBody] TransferRequestDto request)
-    {
-        var userId = GetCurrentUserId();
-
-        if (userId == null)
-        {
-            return Unauthorized();
-        }
-
-        var result = await _transactionService.TransferAsync(userId.Value, request);
+        var result = await _cardService.UpdateCardAsync(userId.Value, cardId, request);
         return result.IsSuccess ? Ok(result) : BadRequest(result);
     }
 

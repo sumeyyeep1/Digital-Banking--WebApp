@@ -30,4 +30,6 @@ public class Account : BaseEntity
 
     // Navigation Property: Bu hesabın aldığı transferler
     public virtual ICollection<Transaction> ReceivedTransactions { get; set; } = new List<Transaction>();
+
+    public virtual ICollection<Card> Cards { get; set; } = new List<Card>();
 }

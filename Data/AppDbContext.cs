@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<Card> Cards { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +38,13 @@ public class AppDbContext : DbContext
             .HasIndex(a => a.Iban)
             .IsUnique();
 
+        modelBuilder.Entity<Card>()
+            .ToTable("Cards");
+
+        modelBuilder.Entity<Card>()
+            .HasIndex(c => c.CardNumber)
+            .IsUnique();
+
         // ===== PARA HASSASIYETI (decimal(18,2)) =====
 
         // Bakiye: 999.999.999.999.999,99 hassasiyetinde
@@ -48,6 +56,22 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Transaction>()
             .Property(t => t.Amount)
             .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Card>()
+            .Property(c => c.CardNumber)
+            .HasMaxLength(16);
+
+        modelBuilder.Entity<Card>()
+            .Property(c => c.CardHolderName)
+            .HasMaxLength(100);
+
+        modelBuilder.Entity<Card>()
+            .Property(c => c.ExpiryMonth)
+            .HasMaxLength(2);
+
+        modelBuilder.Entity<Card>()
+            .Property(c => c.ExpiryYear)
+            .HasMaxLength(4);
 
         // ===== TRANSFER İLİŞKİLERİ =====
 
@@ -63,6 +87,12 @@ public class AppDbContext : DbContext
             .HasOne(t => t.ReceiverAccount)
             .WithMany(a => a.ReceivedTransactions)
             .HasForeignKey(t => t.ReceiverAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Card>()
+            .HasOne(c => c.Account)
+            .WithMany(a => a.Cards)
+            .HasForeignKey(c => c.AccountId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

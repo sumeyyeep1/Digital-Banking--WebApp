@@ -49,6 +49,44 @@ public class TransactionService : ITransactionService
         return Success("Para yatirma islemi basarili.", transaction.Id, account.Balance);
     }
 
+    public async Task<TransactionResponseDto> WithdrawAsync(int userId, WithdrawRequestDto request)
+    {
+        var account = await _context.Accounts
+            .Include(a => a.Customer)
+            .FirstOrDefaultAsync(a => a.Id == request.AccountId && a.Customer.UserId == userId && a.Status == EntityStatus.Active);
+
+        if (account == null)
+        {
+            return Fail("Hesap bulunamadi veya bu hesaba erisim yetkin yok.");
+        }
+
+        if (request.Amount <= 0)
+        {
+            return Fail("Tutar 0'dan buyuk olmalidir.");
+        }
+
+        if (account.Balance < request.Amount)
+        {
+            return Fail("Yetersiz bakiye.");
+        }
+
+        account.Balance -= request.Amount;
+        account.UpdatedAt = DateTime.UtcNow;
+
+        var transaction = new Transaction
+        {
+            TransactionType = TransactionType.Withdrawal,
+            Amount = request.Amount,
+            Description = request.Description,
+            SenderAccountId = account.Id
+        };
+
+        _context.Transactions.Add(transaction);
+        await _context.SaveChangesAsync();
+
+        return Success("Para cekme islemi basarili.", transaction.Id, account.Balance);
+    }
+
     public async Task<TransactionResponseDto> TransferAsync(int userId, TransferRequestDto request)
     {
         if (request.Amount <= 0)
