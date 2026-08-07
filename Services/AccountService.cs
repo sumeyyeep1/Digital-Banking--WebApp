@@ -6,16 +6,17 @@ using DigitalBanking.API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DigitalBanking.API.Services;
-
+//İnterface den miras alır.
 public class AccountService : IAccountService
+
 {
     private readonly AppDbContext _context;
-
+    //Constructor injection ile AppDbContext'i alır.
     public AccountService(AppDbContext context)
     {
         _context = context;
     }
-
+    //
     public async Task<List<AccountResponseDto>> GetMyAccountsAsync(int userId)
     {
         return await _context.Accounts
