@@ -5,6 +5,8 @@ public class LoginResponseDto
 {
     public int UserId { get; set; }
     public string Email { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
 
     // JWT Token: Kullanıcının kimliğini kanıtlayan şifreli anahtar
@@ -17,3 +19,5 @@ public class LoginResponseDto
     public bool IsSuccess { get; set; }
     public string Message { get; set; } = string.Empty;
 }
+
+

@@ -16,7 +16,7 @@ namespace DigitalBanking.API.Services; // Bu sinifin Services alaninda oldugunu 
 // AuthService, IAuthServiceden impelement edilir ; yani sozlesmedeki metotlari gerceklestirir.
 public class AuthService : IAuthService
 {
-    private readonly AppDbContext _context; // Veritabaniyla konusmak icin kullandigimiz EF Core baglami.
+    private readonly AppDbContext _context; //Veritabanýyla konuþmak için kullandýðýmýz field.
     private readonly IConfiguration _configuration; // appsettings.json icindeki ayarlari okumak icin kullanilir.
     private readonly IPasswordHasher<User> _passwordHasher; // Sifreleri okunamaz hash haline getiren yardimci servis.
 
@@ -33,10 +33,11 @@ public class AuthService : IAuthService
     }
 
     // LoginAsync: Kullanici email ve sifre gonderdiginde giris yapabilir mi diye kontrol eder.
-    public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
+    public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request) //Login isteði alýr ve LoginResponseDto döndürür.   
     {
-        var user = await _context.Users // Users tablosundan arama baslatiriz.
-            .FirstOrDefaultAsync(u => u.Email == request.Email); // Email eslesen ilk kullaniciyi buluruz; yoksa null doner.
+        var user = await _context.Users // user deðiþkeni oluþturur ve bu deðiþkene db de users tablosunu atarýz.
+            .Include(u => u.Customer)  // Bulunan kullanýcýnýn müþteri bilgilerini de user deðiþkenine dahil eder.
+            .FirstOrDefaultAsync(u => u.Email == request.Email); // users tablosunda email deðeri request nesnesindekiyle ayný olan kullanýcýyý döner.
 
         if (user == null) // Kullanici bulunamazsa giris devam edemez.
         {
@@ -47,15 +48,30 @@ public class AuthService : IAuthService
             };
         }
 
-        var passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password); // Girilen sifre hash ile uyusuyor mu bakariz.
+        PasswordVerificationResult passwordResult; // Girilen sifre ile veritabanindaki hashli sifreyi karsilastirmak icin kullanacagimiz degisken.
+        try
+        {
+            passwordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password); // Girilen sifre hash ile uyusuyor mu diye bakýlýr.
+        }
+        catch (FormatException) // Db de hash formatý hatalýysa veya girilen þifre hashlenemiyorsa FormatException fýrlatýlýr ve bu catch bloðu çalýþýr.
+        {
+            passwordResult = PasswordVerificationResult.Failed; //Þifre kontrol sonucu baþarýsýz olarak ayarlanýr.
+        }
 
         if (passwordResult == PasswordVerificationResult.Failed) // Sifre dogru degilse girisi reddederiz.
         {
-            return new LoginResponseDto // Hata cevabi olustururuz.
+            if (user.PasswordHash != request.Password) // girilen þifre ile db deki hashli þifre eþleþmezse hata döndürür.
             {
-                IsSuccess = false, // Islemin basarisiz oldugunu belirtiriz.
-                Message = "Sifre hatali." // Kullaniciya sade hata mesaji veririz.
-            };
+                return new LoginResponseDto // Hata cevabi olustururuz. 
+                {
+                    IsSuccess = false, // Islemin basarisiz oldugunu belirtiriz.
+                    Message = "Sifre hatali." // Kullaniciya sade hata mesaji veririz.
+                };
+            }
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.Password); // Girilen sifreyi hashleyip veritabanina kaydederiz.
+            user.UpdatedAt = DateTime.UtcNow; // Kullanici kaydinin guncellenme tarihini simdiki UTC zamani olarak ayarlarýz.
+            await _context.SaveChangesAsync(); // Deðiþiklikler db e kaydedilir.
         }
 
         var token = CreateToken(user); // Kullanici dogrulandiysa ona JWT token uretiriz.
@@ -64,11 +80,13 @@ public class AuthService : IAuthService
         {
             UserId = user.Id, // Kullanici id bilgisini doneriz.
             Email = user.Email, // Kullanici email bilgisini doneriz.
+            FirstName = user.Customer?.FirstName ?? string.Empty, // Kullaniciya bagli musteri kaydi varsa adini doneriz, yoksa bos string doneriz.
+            LastName = user.Customer?.LastName ?? string.Empty,
             Role = user.Role.ToString(), // Enum olan rolu metin olarak doneriz.
             Token = token.TokenString, // Uretilen JWT token metnini doneriz.
             TokenExpiry = token.ExpiryDate, // Token gecerlilik bitis tarihini doneriz.
             IsSuccess = true, // Islemin basarili oldugunu soyleriz.
-            Message = "Giris basarili." // Kullaniciya basari mesaji veririz.
+            Message = "Giriþ baþarýlý." // Kullaniciya basari mesaji veririz.
         };
     }
 
@@ -80,19 +98,19 @@ public class AuthService : IAuthService
             return new LoginResponseDto // Hata cevabi olustururuz.
             {
                 IsSuccess = false, // Islemin basarisiz oldugunu belirtiriz.
-                Message = "Sifreler eslesmiyor." // Kullaniciya neyin yanlis oldugunu soyleriz.
+                Message = "Þifreler eþleþmiyor." // Kullaniciya neyin yanlis oldugunu soyleriz.
             };
         }
 
         var emailAlreadyExists = await _context.Users // Users tablosunda kontrol baslatiriz.
-            .AnyAsync(u => u.Email == request.Email); // Bu email daha once kullanilmis mi diye bakariz.
+            .AnyAsync(u => u.Email == request.Email); // Bu metot ile girilen email daha önce kullanýlmýþ mý diye kontrol edilir.Sonucu bool döner.
 
         if (emailAlreadyExists) // Email zaten varsa ayni email ile ikinci hesap acmayiz.
         {
             return new LoginResponseDto // Hata cevabi olustururuz.
             {
                 IsSuccess = false, // Islemin basarisiz oldugunu belirtiriz.
-                Message = "Bu email adresi zaten kullaniliyor." // Kullaniciya emailin tekrarli oldugunu soyleriz.
+                Message = "Bu e-mail adresi zaten kullanýlýyor." // Kullaniciya emailin tekrarli oldugunu soyleriz.
             };
         }
 
@@ -104,7 +122,7 @@ public class AuthService : IAuthService
             return new LoginResponseDto // Hata cevabi olustururuz.
             {
                 IsSuccess = false, // Islemin basarisiz oldugunu belirtiriz.
-                Message = "Bu TC Kimlik No ile kayitli musteri zaten var." // Kullaniciya kimlik numarasinin tekrarli oldugunu soyleriz.
+                Message = "Bu TC Kimlik No ile kayýtlý müþteri bulunuyor." // Kullaniciya kimlik numarasinin tekrarli oldugunu soyleriz.
             };
         }
 
@@ -114,7 +132,7 @@ public class AuthService : IAuthService
             Role = DigitalBanking.API.Enums.UserRole.Customer // Register olan kisi varsayilan olarak musteri rolundedir.
         };
 
-        newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password); // Ham sifreyi okunamaz hash haline cevirip saklariz.
+        newUser.PasswordHash = _passwordHasher.HashPassword(newUser, request.Password); // Yeni kullanýcýnýn þifresini hashleyip saklarýz.
 
         var newCustomer = new Customer // Yeni Customer nesnesi olustururuz; bu Customers tablosuna gidecek.
         {
@@ -137,11 +155,13 @@ public class AuthService : IAuthService
         {
             UserId = newUser.Id, // Yeni kullanicinin veritabanindan gelen id bilgisini doneriz.
             Email = newUser.Email, // Yeni kullanicinin email bilgisini doneriz.
+            FirstName = newCustomer.FirstName,
+            LastName = newCustomer.LastName,
             Role = newUser.Role.ToString(), // Kullanici rolunu metin olarak doneriz.
             Token = token.TokenString, // Uretilen JWT token metnini doneriz.
             TokenExpiry = token.ExpiryDate, // Token gecerlilik bitis tarihini doneriz.
             IsSuccess = true, // Islemin basarili oldugunu soyleriz.
-            Message = "Kayit basarili." // Kullaniciya basari mesaji veririz.
+            Message = "Kayýt baþarýlý." // Kullaniciya basari mesaji veririz.
         };
     }
 
@@ -178,3 +198,5 @@ public class AuthService : IAuthService
         return (tokenString, expiryDate); // Hem token metnini hem de bitis tarihini birlikte doneriz.
     }
 }
+
+

@@ -26,9 +26,19 @@ packages/
 # Logs
 *.log
 
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/*.tsbuildinfo
+frontend/**/*.tsbuildinfo
+
 # Local environment files
 .env
 .env.*
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
 # OS generated files
 Thumbs.db
