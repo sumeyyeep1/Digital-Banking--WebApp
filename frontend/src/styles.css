@@ -1,39 +1,39 @@
 :root {
   color-scheme: light;
-  --bg: #f6f8fb;
+  --bg: #fff7f7;
   --surface: #ffffff;
-  --surface-soft: #f0f5ff;
-  --text: #102033;
-  --muted: #637083;
-  --border: #d9e2ec;
-  --primary: #12173f;
-  --primary-2: #1e2a78;
-  --accent: #7c3aed;
-  --accent-2: #0ea5e9;
-  --accent-3: #ec4899;
-  --accent-gradient: linear-gradient(135deg, #ec4899 0%, #7c3aed 48%, #0ea5e9 100%);
-  --danger: #c92f42;
+  --surface-soft: #fff0f0;
+  --text: #2a0f12;
+  --muted: #76575b;
+  --border: #f0caca;
+  --primary: #b00020;
+  --primary-2: #e00022;
+  --accent: #ef233c;
+  --accent-2: #ff334e;
+  --accent-3: #b00020;
+  --accent-gradient: linear-gradient(135deg, #b00020 0%, #ef233c 52%, #ffffff 145%);
+  --danger: #d0001f;
   --warning: #986c00;
   --success: #087a55;
-  --shadow: 0 16px 42px rgba(7, 27, 58, 0.1);
+  --shadow: 0 16px 42px rgba(127, 29, 29, 0.11);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #07111f;
-  --surface: #0e1b2d;
-  --surface-soft: #161f3d;
-  --text: #edf6ff;
-  --muted: #a8b6c7;
-  --border: #223653;
-  --primary: #eef2ff;
-  --primary-2: #172554;
-  --accent: #a78bfa;
-  --accent-2: #38bdf8;
-  --accent-3: #f0abfc;
-  --accent-gradient: linear-gradient(135deg, #f0abfc 0%, #a78bfa 48%, #38bdf8 100%);
-  --danger: #ff7d8a;
+  --bg: #17080a;
+  --surface: #250d11;
+  --surface-soft: #3a1118;
+  --text: #fff7f7;
+  --muted: #f1b5bd;
+  --border: #5b1b24;
+  --primary: #fff1f2;
+  --primary-2: #7f1d1d;
+  --accent: #fb7185;
+  --accent-2: #ef4444;
+  --accent-3: #fecdd3;
+  --accent-gradient: linear-gradient(135deg, #7f1d1d 0%, #dc2626 58%, #fff1f2 145%);
+  --danger: #fca5a5;
   --warning: #ffd166;
   --success: #70e4bc;
   --shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
@@ -101,9 +101,7 @@ h2 {
   align-items: center;
   padding: clamp(1.2rem, 4vw, 4rem);
   background:
-    radial-gradient(circle at 15% 15%, rgba(236, 72, 153, 0.25), transparent 28%),
-    radial-gradient(circle at 46% 22%, rgba(14, 165, 233, 0.18), transparent 32%),
-    linear-gradient(135deg, #12173f, #35206b 35%, #0e7490 62%, var(--bg) 62%);
+    linear-gradient(135deg, #a00018 0%, #ef233c 42%, #ffffff 42%, var(--bg) 100%);
 }
 
 .login-copy {
@@ -231,7 +229,7 @@ h2 {
 button:focus-visible,
 a:focus-visible {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.22);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
   outline: none;
 }
 
@@ -249,6 +247,17 @@ a:focus-visible {
   padding: 0.75rem;
   border-radius: 8px;
   background: rgba(201, 47, 66, 0.1);
+}
+
+.field-hint {
+  margin-top: -0.65rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.field-hint.success {
+  color: var(--success);
+  font-weight: 700;
 }
 
 .form-row,
@@ -340,15 +349,17 @@ a:focus-visible {
 
 .sidebar {
   width: 270px;
-  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  height: 100vh;
   padding: 1rem;
   background:
-    radial-gradient(circle at 30% 0%, rgba(236, 72, 153, 0.36), transparent 32%),
-    linear-gradient(180deg, #12173f, #231454 54%, #0f3f70);
+    linear-gradient(180deg, #a00018 0%, #e00022 58%, #ff6b76 140%);
   color: #fff;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow-y: auto;
   transition: width 180ms ease;
 }
 
@@ -378,7 +389,7 @@ a:focus-visible {
 
 .nav-link:hover,
 .nav-link.active {
-  background: rgba(167, 139, 250, 0.18);
+  background: rgba(255, 255, 255, 0.16);
   color: #fff;
 }
 
@@ -690,8 +701,8 @@ th {
   display: grid;
   align-content: space-between;
   background:
-    linear-gradient(135deg, rgba(236, 72, 153, 0.82), transparent 42%),
-    linear-gradient(145deg, #12173f, #312e81 52%, #0369a1);
+    linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(145deg, #7f1d1d, #dc2626 58%, #fff1f2 150%);
 }
 
 .virtual-card strong {
@@ -884,7 +895,7 @@ th {
 @media (max-width: 820px) {
   .login-page {
     grid-template-columns: 1fr;
-    background: linear-gradient(180deg, var(--primary) 0 44%, var(--bg) 44%);
+    background: linear-gradient(180deg, #ef233c 0 44%, var(--bg) 44%);
   }
 
   .desktop-sidebar {

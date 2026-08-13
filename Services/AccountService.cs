@@ -82,7 +82,8 @@ public class AccountService : IAccountService
 
         do
         {
-            iban = $"TR{Random.Shared.NextInt64(10_000_000_000_000_000, 99_999_999_999_999_999)}"; // Random.Shared.NextInt64 metodu, 10^16 ile 10^17 arasında rastgele bir sayı üretir ve TR ile birleştirerek IBAN oluşturur.
+            var digits = string.Concat(Enumerable.Range(0, 24).Select(_ => Random.Shared.Next(0, 10).ToString()));
+            iban = $"TR{digits}";
         }
         while (await _context.Accounts.AnyAsync(a => a.Iban == iban)); // AnyAsync metodu, veritabanında bu IBAN ile eşleşen herhangi bir hesap olup olmadığını kontrol eder.
                                                                        // Eğer böyle bir hesap varsa, döngü tekrar çalışır ve yeni bir IBAN üretilir.

@@ -1,21 +1,38 @@
-import type { Account, CollectApiResponse, LoginResponse, MarketQuote, RegisterRequest, TransactionResponse } from '../types/banking';
+import type {
+  Account,
+  Card,
+  CardOperationResponse,
+  CollectApiResponse,
+  LoginResponse,
+  MarketQuote,
+  RegisterRequest,
+  TransactionResponse,
+} from '../types/banking';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5267/api';
 
 async function request<T>(path: string, options: RequestInit = {}, token?: string) {
   let response: Response;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 12000);
 
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...options,
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new Error('Sunucu yaniti zaman asimina ugradi. Backend uygulamasini yeniden baslatin ve tekrar deneyin.');
+    }
     throw new Error('Sunucuya bağlanılamadı. Lütfen backend uygulamasının çalıştığını kontrol edin.');
+  } finally {
+    window.clearTimeout(timeout);
   }
 
   const data = await response.json().catch(() => null);
@@ -48,6 +65,28 @@ export const api = {
     }),
 
   getMyAccounts: (token: string) => request<Account[]>('/accounts/my', {}, token),
+
+  getMyCards: (token: string) => request<Card[]>('/cards/my', {}, token),
+
+  createCard: (token: string, accountId: number, cardHolderName: string, cardType: number) =>
+    request<CardOperationResponse>(
+      '/cards',
+      {
+        method: 'POST',
+        body: JSON.stringify({ accountId, cardHolderName, cardType }),
+      },
+      token,
+    ),
+
+  updateCard: (token: string, cardId: number, cardHolderName: string, cardType: number) =>
+    request<CardOperationResponse>(
+      `/cards/${cardId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ cardHolderName, cardType }),
+      },
+      token,
+    ),
 
   getGoldPrices: (token: string) => request<CollectApiResponse<MarketQuote>>('/market/gold', {}, token),
 

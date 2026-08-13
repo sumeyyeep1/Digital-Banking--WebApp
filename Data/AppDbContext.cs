@@ -17,7 +17,7 @@ public class AppDbContext : DbContext // Ef core hazır bir DbContext sınıfı 
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<Card> Cards { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder) // Veritabanı modelini oluştururken bazı özel ayarlar yapmak için kullanılır. Örneğin, benzersizlik kısıtlamaları, ilişkiler ve hassasiyet ayarları gibi.    
     {
         base.OnModelCreating(modelBuilder);
 

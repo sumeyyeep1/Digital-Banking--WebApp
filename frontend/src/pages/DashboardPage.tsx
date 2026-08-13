@@ -16,6 +16,7 @@ export function DashboardPage() {
   const [marketQuotes, setMarketQuotes] = useState<MarketQuote[]>([]);
   const [loading, setLoading] = useState(true);
   const [marketLoading, setMarketLoading] = useState(true);
+  const [marketError, setMarketError] = useState('');
   const [hidden, setHidden] = useState(false);
   const displayName = [auth?.firstName, auth?.lastName].filter(Boolean).join(' ') || auth?.email;
 
@@ -27,16 +28,40 @@ export function DashboardPage() {
   useEffect(() => {
     if (!token) return;
 
+    setMarketError('');
     Promise.allSettled([api.getGoldPrices(token), api.getCurrencyRates(token)])
       .then(([goldResult, currencyResult]) => {
-        const gold = goldResult.status === 'fulfilled' ? goldResult.value.result.slice(0, 3) : [];
-        const currency = currencyResult.status === 'fulfilled' ? currencyResult.value.result.slice(0, 3) : [];
-        setMarketQuotes([...gold, ...currency]);
+        const gold = goldResult.status === 'fulfilled' && Array.isArray(goldResult.value.result) ? goldResult.value.result.slice(0, 3) : [];
+        const currency = currencyResult.status === 'fulfilled' && Array.isArray(currencyResult.value.result) ? currencyResult.value.result.slice(0, 3) : [];
+        const quotes = [...gold, ...currency];
+        setMarketQuotes(quotes);
+
+        if (!quotes.length) {
+          const firstError =
+            goldResult.status === 'rejected'
+              ? goldResult.reason
+              : currencyResult.status === 'rejected'
+                ? currencyResult.reason
+                : undefined;
+          setMarketError(firstError instanceof Error ? firstError.message : 'Piyasa verisi alınamadı.');
+        }
       })
       .finally(() => setMarketLoading(false));
   }, [token]);
 
   const totalBalance = useMemo(() => accounts.reduce((sum, account) => sum + account.balance, 0), [accounts]);
+  const formatMarketValue = (quote: MarketQuote) =>
+    quote.sellingstr ??
+    quote.buyingstr ??
+    quote.lastpricestr ??
+    quote.currentstr ??
+    quote.selling ??
+    quote.price ??
+    quote.lastprice ??
+    quote.current ??
+    quote.rate ??
+    quote.value ??
+    '-';
 
   return (
     <div className="page">
@@ -105,14 +130,14 @@ export function DashboardPage() {
                 <div className="compact-row" key={`${quote.code ?? quote.name ?? quote.text}-${index}`}>
                   <div>
                     <strong>{quote.name ?? quote.code ?? quote.text}</strong>
-                    <span>{quote.date ?? quote.time ?? 'Anlik veri'}</span>
+                    <span>{quote.date ?? quote.time ?? 'Anlık veri'}</span>
                   </div>
-                  <b>{quote.selling ?? quote.price ?? quote.rate ?? quote.value ?? '-'}</b>
+                  <b>{formatMarketValue(quote)}</b>
                 </div>
               ))}
             </div>
           ) : (
-            <EmptyState title="Piyasa verisi alinamadi" text="CollectAPI tokenini ekledikten sonra altin ve doviz verileri burada gorunur." />
+            <EmptyState title="Piyasa verisi alınamadı" text={marketError || 'CollectAPI anahtarını ekledikten sonra altın ve döviz verileri burada görünür.'} />
           )}
         </Card>
       </section>

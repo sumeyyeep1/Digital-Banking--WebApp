@@ -8,6 +8,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { AccountsPage } from './pages/AccountsPage';
 import { TransferPage } from './pages/TransferPage';
 import { TransactionsPage } from './pages/TransactionsPage';
+import { CardsPage } from './pages/CardsPage';
 
 function ProtectedRoute() {
   const { token } = useAuth();
@@ -24,6 +25,7 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/accounts" element={<AccountsPage />} />
+              <Route path="/cards" element={<CardsPage />} />
               <Route path="/transfer" element={<TransferPage />} />
               <Route path="/transactions" element={<TransactionsPage />} />
             </Route>

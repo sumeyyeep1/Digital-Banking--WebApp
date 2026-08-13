@@ -14,7 +14,7 @@ import { useAuth } from '../hooks/useAuth';
 
 const schema = z.object({
   senderAccountId: z.coerce.number().min(1, 'Kaynak hesap seçin.'),
-  receiverIban: z.string().regex(/^TR\d{16,24}$/, 'TR ile başlayan geçerli IBAN girin.'),
+  receiverIban: z.string().regex(/^TR\d{24}$/, 'IBAN TR ile başlamalı ve toplam 26 karakter olmalı.'),
   amount: z.coerce.number().positive('Tutar 0’dan büyük olmalı.').max(1_000_000, 'En fazla 1.000.000 TRY gönderilebilir.'),
   description: z.string().max(120, 'Açıklama en fazla 120 karakter olabilir.').optional(),
 });
@@ -30,23 +30,31 @@ export function TransferPage() {
 
   const form = useForm<TransferForm>({
     resolver: zodResolver(schema),
+    mode: 'onChange',
     defaultValues: { senderAccountId: 0, receiverIban: '', amount: 100, description: '' },
   });
+
   const values = form.watch();
   const source = useMemo(() => accounts.find((account) => account.id === Number(values.senderAccountId)), [accounts, values.senderAccountId]);
+  const receiverIbanLength = (values.receiverIban ?? '').replace(/\s/g, '').length;
 
   useEffect(() => {
     if (!token) return;
+
     api.getMyAccounts(token).then((items) => {
       setAccounts(items);
-      if (items[0]) form.setValue('senderAccountId', items[0].id);
+      if (items[0]) form.setValue('senderAccountId', items[0].id, { shouldValidate: true });
     });
   }, [form, token]);
 
-  const prepare = form.handleSubmit(() => setStep('confirm'));
+  const prepare = form.handleSubmit((formValues) => {
+    form.setValue('receiverIban', formValues.receiverIban.replace(/\s/g, '').toUpperCase(), { shouldValidate: true });
+    setStep('confirm');
+  });
 
   const confirm = async () => {
     if (!token) return;
+
     setSubmitting(true);
     try {
       const result = await api.transfer(token, Number(values.senderAccountId), values.receiverIban, Number(values.amount), values.description);
@@ -83,20 +91,34 @@ export function TransferPage() {
                 <Select
                   label="Kaynak hesap"
                   {...form.register('senderAccountId')}
-                  options={accounts.map((account) => ({ value: String(account.id), label: `${account.accountType} · ${formatCurrency(account.balance)} · ${maskIban(account.iban)}` }))}
+                  options={accounts.map((account) => ({
+                    value: String(account.id),
+                    label: `${account.accountType} - ${formatCurrency(account.balance)} - ${maskIban(account.iban)}`,
+                  }))}
                   error={form.formState.errors.senderAccountId?.message}
                 />
-                <Input label="Alıcı IBAN" {...form.register('receiverIban')} error={form.formState.errors.receiverIban?.message} />
+                <Input
+                  label="Alıcı IBAN"
+                  {...form.register('receiverIban', {
+                    onChange: (event) => {
+                      event.target.value = event.target.value.replace(/\s/g, '').toUpperCase();
+                    },
+                  })}
+                  error={form.formState.errors.receiverIban?.message}
+                />
+                <small className={receiverIbanLength === 26 ? 'field-hint success' : 'field-hint'}>
+                  IBAN 26 karakter olmalı. Şu an {receiverIbanLength}/26 karakter girdiniz.
+                </small>
                 <Input label="Tutar" type="number" step="0.01" {...form.register('amount')} error={form.formState.errors.amount?.message} />
                 <Input label="Açıklama" {...form.register('description')} error={form.formState.errors.description?.message} />
                 {source && Number(values.amount) > source.balance && <div className="form-alert">Seçilen hesap bakiyesi bu tutar için yeterli değil.</div>}
-                <Button type="submit" icon={<Send size={18} />} disabled={!source || Number(values.amount) > source.balance}>
-                  Özete geç
+                <Button type="submit" icon={<Send size={18} />} disabled={!form.formState.isValid || !source || Number(values.amount) > source.balance}>
+                  Devam
                 </Button>
               </form>
             ) : (
               <div className="stack">
-                <h2>İşlem özeti</h2>
+                <h2>Transfer bilgilerini kontrol edin</h2>
                 <div className="summary-row"><span>Kaynak hesap</span><strong>{source ? maskIban(source.iban) : '-'}</strong></div>
                 <div className="summary-row"><span>Alıcı IBAN</span><strong>{maskIban(values.receiverIban)}</strong></div>
                 <div className="summary-row"><span>Tutar</span><strong>{formatCurrency(Number(values.amount))}</strong></div>

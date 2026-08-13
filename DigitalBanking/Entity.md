@@ -1,0 +1,1 @@
+Entity sınıfları tablo alanlarını oluşturur.Propertyler oluşturulur ve bu propertyler tablodaki alanları temsil eder.

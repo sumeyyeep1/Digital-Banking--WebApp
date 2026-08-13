@@ -4,13 +4,13 @@ services:
     container_name: digitalbanking-db
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "Your_strong_password123"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Change_this_SQL_password_123!}"
     ports:
       - "1433:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
     healthcheck:
-      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Your_strong_password123" -C -Q "SELECT 1" || exit 1
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
@@ -26,7 +26,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=DigitalBankingSimpleDb;User Id=sa;Password=Your_strong_password123;TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=DigitalBankingSimpleDb;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Change_this_SQL_password_123!};TrustServerCertificate=True;"
+      CollectApi__ApiKey: "${COLLECT_API_KEY:-}"
+      JwtSettings__SecretKey: "${JWT_SECRET_KEY:-CHANGE_ME_WITH_A_LONG_DEVELOPMENT_SECRET_KEY_36_CHARS_MIN}"
     ports:
       - "5267:8080"
 

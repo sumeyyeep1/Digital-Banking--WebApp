@@ -1,4 +1,4 @@
-import { Banknote, Gauge, Landmark, LogIn, Send } from 'lucide-react';
+import { Banknote, CreditCard, Gauge, Landmark, LogIn, Send } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -10,6 +10,7 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { label: 'Genel bakış', path: '/dashboard', icon: Gauge },
   { label: 'Hesaplar', path: '/accounts', icon: Landmark },
+  { label: 'Kartlar', path: '/cards', icon: CreditCard },
   { label: 'Para transferi', path: '/transfer', icon: Send },
   { label: 'Para yatır / çek', path: '/transactions', icon: Banknote },
 ];

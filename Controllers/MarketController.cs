@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
+using DigitalBanking.API.Interfaces;
 
 namespace DigitalBanking.API.Controllers;
 
@@ -9,103 +9,38 @@ namespace DigitalBanking.API.Controllers;
 [Route("api/[controller]")]
 public class MarketController : ControllerBase
 {
-    private static readonly SemaphoreSlim CollectApiGate = new(1, 1);
-    private static DateTimeOffset _lastCollectApiRequest = DateTimeOffset.MinValue;
+    private readonly IMarketService _marketService;
 
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
-    private readonly IMemoryCache _memoryCache;
-
-    public MarketController(IHttpClientFactory httpClientFactory, IConfiguration configuration, IMemoryCache memoryCache)
+    public MarketController(IMarketService marketService)
     {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
-        _memoryCache = memoryCache;
+        _marketService = marketService;
     }
 
     [HttpGet("gold")]
-    public Task<IActionResult> GetGoldPrices()
+    public async Task<IActionResult> GetGoldPrices()
     {
-        return GetCollectApiResponseAsync("/economy/goldPrice");
+        return CreateJsonResult(await _marketService.GetGoldPricesAsync());
     }
 
     [HttpGet("currency")]
-    public Task<IActionResult> GetCurrencyRates()
+    public async Task<IActionResult> GetCurrencyRates()
     {
-        return GetCollectApiResponseAsync("/economy/allCurrency");
+        return CreateJsonResult(await _marketService.GetCurrencyRatesAsync());
     }
 
     [HttpGet("bist")]
-    public Task<IActionResult> GetBistValues()
+    public async Task<IActionResult> GetBistValues()
     {
-        return GetCollectApiResponseAsync("/economy/borsaIstanbul");
+        return CreateJsonResult(await _marketService.GetBistValuesAsync());
     }
 
     [HttpGet("stocks")]
-    public Task<IActionResult> GetStocks()
+    public async Task<IActionResult> GetStocks()
     {
-        return GetCollectApiResponseAsync("/economy/hisseSenedi");
+        return CreateJsonResult(await _marketService.GetStocksAsync());
     }
 
-    private async Task<IActionResult> GetCollectApiResponseAsync(string path)
-    {
-        var cacheKey = $"collectapi:{path}";
-        if (_memoryCache.TryGetValue(cacheKey, out CachedMarketResponse? cachedResponse) && cachedResponse is not null)
-        {
-            return CreateJsonResult(cachedResponse);
-        }
-
-        var apiKey = _configuration["CollectApi:ApiKey"];
-        if (string.IsNullOrWhiteSpace(apiKey))
-        {
-            return BadRequest(new { message = "CollectAPI token tanimli degil. appsettings.Development.json veya environment variable ile CollectApi__ApiKey girin." });
-        }
-
-        var authorizationValue = apiKey.StartsWith("apikey ", StringComparison.OrdinalIgnoreCase)
-            ? apiKey
-            : $"apikey {apiKey}";
-
-        var baseUrl = _configuration["CollectApi:BaseUrl"] ?? "https://api.collectapi.com";
-        var client = _httpClientFactory.CreateClient();
-
-        await CollectApiGate.WaitAsync();
-        try
-        {
-            if (_memoryCache.TryGetValue(cacheKey, out cachedResponse) && cachedResponse is not null)
-            {
-                return CreateJsonResult(cachedResponse);
-            }
-
-            var elapsed = DateTimeOffset.UtcNow - _lastCollectApiRequest;
-            if (elapsed < TimeSpan.FromSeconds(1.1))
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1.1) - elapsed);
-            }
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl.TrimEnd('/')}{path}");
-            request.Headers.TryAddWithoutValidation("Authorization", authorizationValue);
-
-            using var response = await client.SendAsync(request);
-            _lastCollectApiRequest = DateTimeOffset.UtcNow;
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var marketResponse = new CachedMarketResponse(responseBody, (int)response.StatusCode);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var cacheMinutes = _configuration.GetValue("CollectApi:CacheMinutes", 5);
-                _memoryCache.Set(cacheKey, marketResponse, TimeSpan.FromMinutes(cacheMinutes));
-            }
-
-            return CreateJsonResult(marketResponse);
-        }
-        finally
-        {
-            CollectApiGate.Release();
-        }
-    }
-
-    private static ContentResult CreateJsonResult(CachedMarketResponse response)
+    private static ContentResult CreateJsonResult(MarketApiResponse response)
     {
         return new ContentResult
         {
@@ -114,6 +49,4 @@ public class MarketController : ControllerBase
             StatusCode = response.StatusCode
         };
     }
-
-    private sealed record CachedMarketResponse(string Content, int StatusCode);
 }

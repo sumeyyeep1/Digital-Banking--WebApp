@@ -8,29 +8,30 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args); // 
 
 // =============================================
 // 1. VERİTABANI BAĞLANTISI
 // =============================================
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // DI: AppDbContext'i ihtiyac olan siniflara hazir olarak verir.
 
 // =============================================
 // 2. SERVİS KAYITLARI (Dependency Injection)
 // =============================================
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>(); // DI sayesinde bu servisler ihtiyac olan siniflara hazir olarak verilir.
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<IMarketService, MarketService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>(); // DI: Sifre hashleme servisini ihtiyac olan siniflara hazir olarak verir.
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient(); 
 builder.Services.AddMemoryCache();
 // =============================================
 // 3. JWT AUTHENTICATION AYARLARI
 // appsettings.json'daki JwtSettings'i buraya bağlıyoruz
 // =============================================
-var secretKey = builder.Configuration["JwtSettings:SecretKey"]!;
+var secretKey = builder.Configuration["JwtSettings:SecretKey"]!; 
 var issuer = builder.Configuration["JwtSettings:Issuer"]!;
 var audience = builder.Configuration["JwtSettings:Audience"]!;
 
@@ -73,7 +74,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Frontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000")
+            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000") // yalnızca bu adreslerden gelen istekleri backend kabul eder
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -113,7 +114,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-var app = builder.Build();
+var app = builder.Build(); // 
 
 // =============================================
 // 6. MIDDLEWARE SIRALAMA (Sıra önemli!)
@@ -128,12 +129,12 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+app.UseHttpsRedirection();// Https yönlendirmesi yapar. Yani http ile gelen istekleri otomatik olarak https'e yönlendirir.
 
-app.UseCors("Frontend");
+app.UseCors("Frontend"); // CORS middleware'i ekler ve "Frontend" isimli CORS politikasını uygular. Bu sayede sadece belirlenen frontend adreslerinden gelen istekler kabul edilir.
 
 // Önce kimlik doğrulama (Authentication): "Sen kimsin?"
-app.UseAuthentication();
+app.UseAuthentication(); // 
 
 // Sonra yetkilendirme (Authorization): "Buna iznin var mı?"
 app.UseAuthorization();
@@ -146,4 +147,4 @@ using (var scope = app.Services.CreateScope())
     dbContext.Database.Migrate();
 }
 
-app.Run();
+app.Run();// WEB api başlatır ve gelen istekleri kontrol eder.

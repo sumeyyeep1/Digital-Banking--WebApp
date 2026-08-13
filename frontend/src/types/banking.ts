@@ -27,6 +27,23 @@ export interface TransactionResponse {
   currentBalance?: number;
 }
 
+export interface Card {
+  id: number;
+  maskedCardNumber: string;
+  cardHolderName: string;
+  expiryMonth: string;
+  expiryYear: string;
+  cardType: string;
+  accountId: number;
+  accountIban: string;
+}
+
+export interface CardOperationResponse {
+  isSuccess: boolean;
+  message: string;
+  cardId?: number;
+}
+
 export interface RegisterRequest {
   email: string;
   password: string;
@@ -42,17 +59,24 @@ export interface MarketQuote {
   name?: string;
   code?: string;
   text?: string;
-  buying?: string;
-  selling?: string;
-  price?: string;
-  rate?: string;
-  change?: string;
-  value?: string;
+  buying?: string | number;
+  buyingstr?: string;
+  selling?: string | number;
+  sellingstr?: string;
+  price?: string | number;
+  lastprice?: string | number;
+  lastpricestr?: string;
+  current?: string | number;
+  currentstr?: string;
+  rate?: string | number;
+  change?: string | number;
+  value?: string | number;
   date?: string;
   time?: string;
 }
 
 export interface CollectApiResponse<T> {
   success: boolean;
-  result: T[];
+  result?: T[];
+  message?: string;
 }
