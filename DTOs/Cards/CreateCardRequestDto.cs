@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using DigitalBanking.API.Enums;
 
 namespace DigitalBanking.API.DTOs.Cards;
-
+// Yeni kart oluþturmak için kullanýlan DTO (Data Transfer Object) sýnýfý
 public class CreateCardRequestDto
 {
     [Required]

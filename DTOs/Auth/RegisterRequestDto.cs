@@ -6,6 +6,7 @@ namespace DigitalBanking.API.DTOs.Auth; // Bu sinifin Auth DTO klasorune ait old
 // RegisterRequestDto: Kullanici kayit olurken API'ye gonderilen form verisidir.
 public class RegisterRequestDto
 {
+    //required : Bu alanin doldurulmasi zorunludur. Bos birakilirsa hata uretir.Hemen altýnda bulunan propertye uygulanýr.
     [Required(ErrorMessage = "Email alani zorunludur.")] // Email bos gelirse ASP.NET Core otomatik hata uretir.
     [EmailAddress(ErrorMessage = "Gecerli bir email adresi giriniz.")] // Email bicimi dogru mu diye kontrol eder.
     public string Email { get; set; } = string.Empty; // Kullanici sisteme bu email ile giris yapacak.

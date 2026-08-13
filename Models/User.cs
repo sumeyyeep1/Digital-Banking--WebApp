@@ -13,5 +13,5 @@ public class User : BaseEntity
     public UserRole Role { get; set; } = UserRole.Customer;
 
     // Navigation Property: Bu kullanıcıya ait müşteri bilgileri (1 User → 1 Customer)
-    public virtual Customer? Customer { get; set; }
+    public virtual Customer? Customer { get; set; } // ? ile nullable yapıldı, çünkü her kullanıcı bir müşteri olmayabilir (örneğin banka görevlisi veya admin olabilir)
 }

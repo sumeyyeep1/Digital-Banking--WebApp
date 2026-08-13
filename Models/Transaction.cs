@@ -27,5 +27,5 @@ public class Transaction : BaseEntity
     public virtual Account? SenderAccount { get; set; }
 
     // Navigation Property: Alan hesap
-    public virtual Account? ReceiverAccount { get; set; }
+    public virtual Account? ReceiverAccount { get; set; } // ? ile null olabileceğini belirtiyoruz, çünkü bazı transferlerde alıcı hesap olmayabilir 
 }

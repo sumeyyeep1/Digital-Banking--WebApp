@@ -37,3 +37,22 @@ export interface RegisterRequest {
   phoneNumber: string;
   address: string;
 }
+
+export interface MarketQuote {
+  name?: string;
+  code?: string;
+  text?: string;
+  buying?: string;
+  selling?: string;
+  price?: string;
+  rate?: string;
+  change?: string;
+  value?: string;
+  date?: string;
+  time?: string;
+}
+
+export interface CollectApiResponse<T> {
+  success: boolean;
+  result: T[];
+}

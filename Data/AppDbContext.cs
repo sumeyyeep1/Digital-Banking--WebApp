@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 namespace DigitalBanking.API.Data;
 
 // Veritabanı bağlamı - EF Core'un veritabanıyla konuştuğu yer
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext // Ef core hazır bir DbContext sınıfı sağlar, biz de bunu miras alıyoruz. Bu sayede veritabanı işlemlerini kolayca yapabiliriz.
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) // options ile veritabanı bağlantı ayarlarını alır ve dbcontext sınıfına iletir. Bu sayede hangi veritabanına bağlanacağımızı belirleyebiliriz.
     {
     }
 

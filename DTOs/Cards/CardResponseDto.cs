@@ -1,5 +1,5 @@
 namespace DigitalBanking.API.DTOs.Cards;
-
+// Kart bilgilerini döndüren DTO
 public class CardResponseDto
 {
     public int Id { get; set; }

@@ -5,12 +5,12 @@ namespace DigitalBanking.API.Models;
 public class Card : BaseEntity
 {
     public string CardNumber { get; set; } = string.Empty;
-    public string CardHolderName { get; set; } = string.Empty;
+    public string CardHolderName { get; set; } = string.Empty; 
     public string ExpiryMonth { get; set; } = string.Empty;
     public string ExpiryYear { get; set; } = string.Empty;
     public string CvvHash { get; set; } = string.Empty;
-    public CardType CardType { get; set; } = CardType.Debit;
+    public CardType CardType { get; set; } = CardType.Debit; // Kart tipi enum olduðu için property tipi de CardType olarak belirlenir
 
     public int AccountId { get; set; }
-    public virtual Account Account { get; set; } = null!;
+    public virtual Account Account { get; set; } = null!; // Kartýn baðlý olduðu hesaba ulaþmak için navigation property        
 }

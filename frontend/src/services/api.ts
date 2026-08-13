@@ -1,4 +1,4 @@
-import type { Account, LoginResponse, RegisterRequest, TransactionResponse } from '../types/banking';
+import type { Account, CollectApiResponse, LoginResponse, MarketQuote, RegisterRequest, TransactionResponse } from '../types/banking';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5267/api';
 
@@ -48,6 +48,12 @@ export const api = {
     }),
 
   getMyAccounts: (token: string) => request<Account[]>('/accounts/my', {}, token),
+
+  getGoldPrices: (token: string) => request<CollectApiResponse<MarketQuote>>('/market/gold', {}, token),
+
+  getCurrencyRates: (token: string) => request<CollectApiResponse<MarketQuote>>('/market/currency', {}, token),
+
+  getBistValues: (token: string) => request<CollectApiResponse<MarketQuote>>('/market/bist', {}, token),
 
   createAccount: (token: string, accountType: number, currency = 1) =>
     request<Account>(

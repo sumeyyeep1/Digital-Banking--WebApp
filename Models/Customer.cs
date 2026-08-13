@@ -22,8 +22,8 @@ public class Customer : BaseEntity
     public int UserId { get; set; }
 
     // Navigation Property: Bağlı olduğu kullanıcı
-    public virtual User User { get; set; } = null!;
+    public virtual User User { get; set; } = null!;// Müşterinin bağlı olduğu kullanıcıya ulaşmak için navigation property
 
     // Navigation Property: Bu müşteriye ait hesaplar (1 müşteri → N hesap)
-    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
+    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>(); //Bağlı olduğu hesaplar ,birden fazla account nesnesi tutabilir
 }

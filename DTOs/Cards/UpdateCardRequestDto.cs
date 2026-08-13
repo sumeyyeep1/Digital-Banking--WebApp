@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using DigitalBanking.API.Enums;
 
 namespace DigitalBanking.API.DTOs.Cards;
-
+// kart güncelleme isteði için DTO 
 public class UpdateCardRequestDto
 {
     [Required]

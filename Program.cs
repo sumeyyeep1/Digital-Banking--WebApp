@@ -24,6 +24,8 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>(); // DI: Sifre hashleme servisini ihtiyac olan siniflara hazir olarak verir.
+builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
 // =============================================
 // 3. JWT AUTHENTICATION AYARLARI
 // appsettings.json'daki JwtSettings'i buraya bağlıyoruz

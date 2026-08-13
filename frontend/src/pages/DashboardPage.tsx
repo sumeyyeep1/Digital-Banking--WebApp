@@ -6,20 +6,34 @@ import { Button } from '../components/ui/Button';
 import { Skeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { api } from '../services/api';
-import type { Account } from '../types/banking';
+import type { Account, MarketQuote } from '../types/banking';
 import { formatCurrency, maskIban } from '../utils/format';
 import { useAuth } from '../hooks/useAuth';
 
 export function DashboardPage() {
   const { auth, token } = useAuth();
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [marketQuotes, setMarketQuotes] = useState<MarketQuote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marketLoading, setMarketLoading] = useState(true);
   const [hidden, setHidden] = useState(false);
   const displayName = [auth?.firstName, auth?.lastName].filter(Boolean).join(' ') || auth?.email;
 
   useEffect(() => {
     if (!token) return;
     api.getMyAccounts(token).then(setAccounts).finally(() => setLoading(false));
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    Promise.allSettled([api.getGoldPrices(token), api.getCurrencyRates(token)])
+      .then(([goldResult, currencyResult]) => {
+        const gold = goldResult.status === 'fulfilled' ? goldResult.value.result.slice(0, 3) : [];
+        const currency = currencyResult.status === 'fulfilled' ? currencyResult.value.result.slice(0, 3) : [];
+        setMarketQuotes([...gold, ...currency]);
+      })
+      .finally(() => setMarketLoading(false));
   }, [token]);
 
   const totalBalance = useMemo(() => accounts.reduce((sum, account) => sum + account.balance, 0), [accounts]);
@@ -80,6 +94,26 @@ export function DashboardPage() {
             <Link to="/transfer" className="quick-action"><Send size={22} /><span>Transfer</span></Link>
             <Link to="/transactions" className="quick-action"><Wallet size={22} /><span>Yatır / çek</span></Link>
           </div>
+        </Card>
+        <Card>
+          <h2>Piyasa</h2>
+          {marketLoading ? (
+            <Skeleton lines={4} />
+          ) : marketQuotes.length ? (
+            <div className="stack">
+              {marketQuotes.map((quote, index) => (
+                <div className="compact-row" key={`${quote.code ?? quote.name ?? quote.text}-${index}`}>
+                  <div>
+                    <strong>{quote.name ?? quote.code ?? quote.text}</strong>
+                    <span>{quote.date ?? quote.time ?? 'Anlik veri'}</span>
+                  </div>
+                  <b>{quote.selling ?? quote.price ?? quote.rate ?? quote.value ?? '-'}</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="Piyasa verisi alinamadi" text="CollectAPI tokenini ekledikten sonra altin ve doviz verileri burada gorunur." />
+          )}
         </Card>
       </section>
     </div>

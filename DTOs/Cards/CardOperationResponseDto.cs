@@ -1,5 +1,5 @@
 namespace DigitalBanking.API.DTOs.Cards;
-
+// Kart iþlemleri için kullanýlan DTO
 public class CardOperationResponseDto
 {
     public bool IsSuccess { get; set; }
