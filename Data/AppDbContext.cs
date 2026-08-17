@@ -11,7 +11,7 @@ public class AppDbContext : DbContext // Ef core hazır bir DbContext sınıfı 
     }
 
     // ===== TABLOLAR =====
-    public DbSet<User> Users { get; set; }
+    public DbSet<User> Users { get; set; } // burada propertyler oluşturulur.
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Transaction> Transactions { get; set; }

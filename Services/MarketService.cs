@@ -5,10 +5,10 @@ namespace DigitalBanking.API.Services;
 
 public class MarketService : IMarketService
 {
-    private static readonly SemaphoreSlim CollectApiGate = new(1, 1);
+    private static readonly SemaphoreSlim CollectApiGate = new(1, 1); 
     private static DateTimeOffset _lastCollectApiRequest = DateTimeOffset.MinValue;
 
-    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IHttpClientFactory _httpClientFactory; 
     private readonly IConfiguration _configuration;
     private readonly IMemoryCache _memoryCache;
 

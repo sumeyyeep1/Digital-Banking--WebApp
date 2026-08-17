@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
+//Uygulama başlarken tüm ihtiyaç duyduğu servisler,ayarlar kuralları buraya koyarız ve web sunucumuzu başlatır.
 var builder = WebApplication.CreateBuilder(args); // 
 
 // =============================================
